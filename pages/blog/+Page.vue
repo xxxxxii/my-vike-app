@@ -57,4 +57,13 @@ function go(p: number) {
 .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem; }
 .pagination button { padding: 0.5rem 1rem; }
 .pagination .page-info { font-size: 0.9rem; }
+
+/* mobile tweaks */
+@media (max-width: 600px) {
+  .blog-list { padding: 0 0.5rem; margin: 1rem auto; }
+  .post-item h2 { font-size: 1.2rem; }
+  .meta, .excerpt { font-size: 0.9rem; }
+  .pagination { flex-direction: column; gap: 0.5rem; }
+  .pagination button { width: 100%; }
+}
 </style>

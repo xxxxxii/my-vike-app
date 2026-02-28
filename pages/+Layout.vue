@@ -44,6 +44,15 @@ a {
   min-height: 100vh;
   flex-grow: 1;
 }
+/* Responsive adjustments: stack sidebar on top for narrow viewports */
+@media (max-width: 600px) {
+  .layout {
+    flex-direction: column;
+  }
+  .content {
+    padding: 10px;
+  }
+}
 /* Page Transition Animation */
 #page-content {
   opacity: 1;

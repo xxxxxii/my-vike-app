@@ -27,4 +27,10 @@ function formatDate(iso: string) {
 .post-detail { max-width: 700px; margin: 2rem auto; padding: 0 1rem; }
 .meta { color: #888; font-size: 0.9rem; margin-bottom: 1rem; }
 .content { line-height: 1.7; }
+
+@media (max-width: 600px) {
+  .post-detail { padding: 0 0.5rem; margin: 1rem auto; }
+  .post-detail h1 { font-size: 1.5rem; }
+  .meta { font-size: 0.9rem; }
+}
 </style>
