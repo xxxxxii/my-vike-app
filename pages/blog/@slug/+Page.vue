@@ -4,15 +4,31 @@
     <p class="meta">{{ formatDate(post.date) }} · {{ post.readTime }} min 阅读</p>
     <div class="content" v-html="post.content"></div>
     <p><a href="/blog">← 返回博客列表</a></p>
+    <!-- Giscus comments section -->
+    <Comments />
   </article>
   <p v-else>文章未找到。</p>
 </template>
 
 <script lang="ts" setup>
 import { useData } from "vike-vue/useData";
+import { useConfig } from "vike-vue/useConfig";
 import type { Data } from "./+data";
+import Comments from "../../../components/Comments.vue";
 
 const { post } = useData<Data>();
+
+// set document title and description for SEO
+if (post) {
+  useConfig({
+    title: post.title,
+    meta: [
+      { name: "description", content: post.excerpt },
+      { property: "og:title", content: post.title },
+      { property: "og:description", content: post.excerpt },
+    ],
+  });
+}
 
 function formatDate(iso: string) {
   try {
