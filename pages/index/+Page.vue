@@ -5,6 +5,7 @@
     <li>Rendered to HTML.</li>
     <li>Interactive. <Counter /></li>
   </ul>
+  <p><a href="/blog">访问博客 &raquo;</a></p>
 </template>
 
 <script setup lang="ts">
