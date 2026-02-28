@@ -6,6 +6,7 @@ import vikeVue from "vike-vue/config";
 
 export default {
   // https://vike.dev/head-tags
+  prerender: true,
   title: "My Vike App",
   description: "Demo showcasing Vike",
 

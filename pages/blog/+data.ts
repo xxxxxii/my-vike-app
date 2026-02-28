@@ -2,6 +2,7 @@
 
 import type { PageContextServer } from "vike/types";
 import matter from "gray-matter";
+import { useConfig } from "vike-vue/useConfig";
 
 export type Post = {
   title: string;
@@ -21,7 +22,11 @@ export async function data(pageContext: PageContextServer) {
   // no further processing is done.
   const modules = import.meta.glob("/content/blog/*.md", { as: "raw" });
   console.log("Found modules:", Object.keys(modules));
-  
+
+  const config = useConfig();
+  config({
+    title: "Blog",
+  });
   const posts: Post[] = [];
   for (const path in modules) {
     const slug = path.split("/").pop()?.slice(0, -3) || "";

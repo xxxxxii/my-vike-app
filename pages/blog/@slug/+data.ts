@@ -13,19 +13,37 @@ export type PostDetail = {
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
+// prerender all blog post pages at build time. these pages are static
+// so there is no need to run the loader on every request. enabling
+// `prerender` also allows the site to be served as a pure static
+// asset collection which is the most efficient for SSR.
+export const prerender = true;
+
+// create the glob once at module load so the resolver and import
+// functions are cached. this avoids doing the glob lookup on every
+// invocation of `data` (which may happen in SSR if not prerendered).
+// the actual file is still fetched lazily when we call the function
+// returned by the glob entry.
+const modules = import.meta.glob<() => Promise<string>>(
+  "/content/blog/*.md",
+  { as: "raw" }
+);
+
+// instantiate a markdown-it parser once instead of inside the loader
+// so we don't recreate the regex tables/objects on every request.
+const mdParser = new MarkdownIt({ html: true });
+
 export async function data(pageContext: PageContextServer) {
   const { slug } = pageContext.routeParams;
-  const modules = import.meta.glob("/content/blog/*.md", { as: "raw" });
+
   const key = Object.keys(modules).find((p) => p.endsWith(`${slug}.md`));
-  console.log("Looking for slug:", slug,modules, "Found key:", key);
-    
   if (!key) {
     return { post: undefined };
   }
+
   const raw = await modules[key]();
   const { data: fm, content: md } = matter(raw);
-  // convert markdown to HTML
-  const mdParser = new MarkdownIt({ html: true });
+  // convert markdown to HTML (fast - parser created above)
   const html = mdParser.render(md);
 
   return {

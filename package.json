@@ -2,7 +2,8 @@
   "scripts": {
     "dev": "vike dev",
     "build": "vike build",
-    "preview": "vike build && vike preview"
+    "preview": "vike build && vike preview",
+    "start": "node dist/server/entry.mjs"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
