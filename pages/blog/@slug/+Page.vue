@@ -138,13 +138,40 @@ function formatDate(iso: string) {
   border-radius: 6px;
   overflow-x: auto;
   margin: 1rem 0;
-  line-height: 1.5;
+  line-height: 1.6;
+  border: 1px solid #1e1e1e;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.content pre::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.3);
+  color: #abb2bf;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0 6px 0 6px;
+  font-size: 0.75rem;
+  font-family: monospace;
 }
 
 .content pre code {
   background: none;
   padding: 0;
   color: inherit;
+  font-size: 0.9rem;
+}
+
+/* Syntax highlighting for inline code */
+.content code.language-js,
+.content code.language-ts,
+.content code.language-vue,
+.content code.language-python,
+.content code.language-bash,
+.content code.language-html {
+  color: #abb2bf;
 }
 
 .content img {

@@ -31,7 +31,17 @@ const modules = import.meta.glob<() => Promise<string>>(
 
 // instantiate a markdown-it parser once instead of inside the loader
 // so we don't recreate the regex tables/objects on every request.
-const mdParser = new MarkdownIt({ html: true });
+// configure highlight for code blocks by adding language class to <pre>.
+const mdParser = new MarkdownIt({ 
+  html: true,
+  highlight: (code, lang) => {
+    // wrap code in <pre> with language class for potential client-side highlighting
+    if (lang) {
+      return `<pre><code class="language-${lang}">${code}</code></pre>`;
+    }
+    return `<pre><code>${code}</code></pre>`;
+  }
+});
 
 export async function data(pageContext: PageContextServer) {
   const { slug } = pageContext.routeParams;
