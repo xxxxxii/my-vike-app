@@ -4,7 +4,11 @@
     {
       "src": "package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
+      // the Vike build output includes both `server` and `client`
+      // directories; static HTML lives under `dist/client`. point
+      // Vercel at that subfolder so it can serve the generated files
+      // directly.
+      "config": { "distDir": "dist/client" }
     }
   ]
 }
