@@ -9,16 +9,32 @@
       <!-- Main content -->
       <div class="post-content">
         <client-only>
-          <MdPreview v-if="post.markdown" :id="editorId" :modelValue="post.markdown" />
+          <MdPreview v-if="post.markdown" :id="editorId" :modelValue="post.markdown" @onGetCatalog="onGetCatalog" />
         </client-only>
       </div>
       
       <!-- Table of contents sidebar -->
       <aside class="toc-sidebar">
         <client-only>
-          <div v-if="post.markdown && showCatalog" class="toc-container">
+          <div class="toc-container">
             <div class="toc-title">目录</div>
-            <MdCatalog :editorId="editorId" scrollElement="html" />
+            <!-- Custom catalog rendering instead of MdCatalog -->
+            <nav v-if="catalogList?.length > 0" class="toc-list" style="display: flex; flex-direction: column; gap: 4px;">
+              <a
+                v-for="item in catalogList"
+                :key="item.text"
+                :href="`#${item.anchor}`"
+                :class="[
+                  'toc-link',
+                  `toc-h${item.level}`,
+                  { 'toc-active': activeCatalogId === item.anchor }
+                ]"
+                @click.prevent="scrollToAnchor(item.anchor)"
+              >
+                {{ item.text }}
+              </a>
+            </nav>
+            <p v-else class="toc-empty">暂无标题</p>
           </div>
         </client-only>
       </aside>
@@ -40,18 +56,13 @@ import type { Data } from "./+data";
 import Comments from "../../../components/Comments.vue";
 import { MdPreview, MdCatalog } from "md-editor-v3";
 import "md-editor-v3/lib/preview.css";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 
 const { post } = useData<Data>();
 const editorId = `md-preview-${Math.random().toString(36).slice(2, 9)}`;
 const showCatalog = ref(false);
 
-// Delay showing catalog to ensure MdPreview is fully rendered
-onMounted(() => {
-  setTimeout(() => {
-    showCatalog.value = true;
-  }, 100);
-});
+const scrollElement = document.documentElement;
 
 // set document title and description for SEO
 if (post) {
@@ -66,6 +77,40 @@ if (post) {
   });
 }
 
+// catalog items from MdPreview: array of { level, text, anchor }
+const catalogList = ref<Array<{ level: number; text: string; anchor: string }>>([]);
+// id of currently active section (used to highlight toc link)
+const activeCatalogId = ref<string>("");
+
+function onGetCatalog(catalog: any) {
+  // md-editor-v3 passes the list of headers when ready
+  catalogList.value = catalog || [];
+  // set first item as active initially
+  if (catalogList.value.length > 0) {
+    activeCatalogId.value = catalogList.value[0].anchor;
+  }
+}
+
+// scroll handler to update activeCatalogId based on viewport position
+function updateActiveOnScroll() {
+  if (!catalogList.value.length) return;
+  const offsets = catalogList.value.map((item) => {
+    const el = document.getElementById(item.anchor);
+    return el ? el.getBoundingClientRect().top : Infinity;
+  });
+  // find first header that is >= 0 from top (or last negative)
+  let idx = offsets.findIndex((t) => t >= 0);
+  if (idx === -1) idx = offsets.length - 1;
+  activeCatalogId.value = catalogList.value[idx]?.anchor || "";
+}
+
+function scrollToAnchor(anchor: string) {
+  const el = document.getElementById(anchor);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 function formatDate(iso: string) {
   try {
     return new Date(iso).toLocaleDateString();
@@ -73,6 +118,19 @@ function formatDate(iso: string) {
     return iso;
   }
 }
+
+// attach scroll listener once mounted
+onMounted(() => {
+  setTimeout(() => {
+    showCatalog.value = true;
+  }, 500);
+  window.addEventListener("scroll", updateActiveOnScroll, { passive: true });
+});
+
+// cleanup
+onUnmounted(() => {
+  window.removeEventListener("scroll", updateActiveOnScroll);
+});
 </script>
 
 <style scoped>
