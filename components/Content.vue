@@ -15,6 +15,9 @@ body.page-transition #page-content {
 
 <style scoped>
 /* Page Transition Animation */
+#page-container{
+  width: 100%;
+}
 #page-content {
   opacity: 1;
   transition: opacity 0.3s ease-in-out;
