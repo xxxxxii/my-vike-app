@@ -2,7 +2,7 @@
   <main class="blog-list">
     <h1>博客</h1>
     <ul>
-      <li v-for="post in posts" :key="post.slug" class="post-item">
+      <li v-for="post in pagedPosts" :key="post.slug" class="post-item">
         <a :href="post.url" class="post-link">
           <h2>{{ post.title }}</h2>
           <p class="meta">{{ formatDate(post.date) }} · {{ post.readTime }} min</p>
@@ -13,14 +13,14 @@
 
     <nav class="pagination" aria-label="分页">
       <button
-        :disabled="page <= 1"
-        @click="go(page - 1)"
+        :disabled="currentPage <= 1"
+        @click="previousPage"
         class="prev"
       >上一页</button>
-      <span class="page-info">第 {{ page }} / {{ totalPages }} 页</span>
+      <span class="page-info">第 {{ currentPage }} / {{ totalPages }} 页</span>
       <button
-        :disabled="page >= totalPages"
-        @click="go(page + 1)"
+        :disabled="currentPage >= totalPages"
+        @click="nextPage"
         class="next"
       >下一页</button>
     </nav>
@@ -29,9 +29,20 @@
 
 <script lang="ts" setup>
 import { useData } from "vike-vue/useData";
+import { ref, computed } from "vue";
 import type { Data } from "./+data";
 
-const { posts, page, totalPages } = useData<Data>();
+const { allPosts } = useData<Data>();
+const PAGE_SIZE = 3;
+
+const currentPage = ref(1);
+
+const totalPages = computed(() => Math.ceil(allPosts.length / PAGE_SIZE) || 1);
+
+const pagedPosts = computed(() => {
+  const start = (currentPage.value - 1) * PAGE_SIZE;
+  return allPosts.slice(start, start + PAGE_SIZE);
+});
 
 function formatDate(iso: string) {
   try {
@@ -41,12 +52,12 @@ function formatDate(iso: string) {
   }
 }
 
-function go(p: number) {
-  if (p <= 1) {
-    window.location.href = "/blog";
-  } else {
-    window.location.href = `/blog/${p}`;
-  }
+function previousPage() {
+  if (currentPage.value > 1) currentPage.value--;
+}
+
+function nextPage() {
+  if (currentPage.value < totalPages.value) currentPage.value++;
 }
 </script>
 
