@@ -4,9 +4,6 @@ import type { PageContextServer } from "vike/types";
 import matter from "gray-matter";
 import { useConfig } from "vike-vue/useConfig";
 
-// prerender the blog list page at build time so the index is a static HTML
-export const prerender = true;
-
 // perform the glob at module init so the resolver is cached and not repeated
 // on each loader invocation. when prerendering, the loader will run once
 // during the build and consume this cached map.
@@ -49,21 +46,17 @@ export async function data(pageContext: PageContextServer) {
   posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   const PAGE_SIZE = 3;
-  // determine current page. if the route includes a `page` param (see
-  // +route.ts below) use that, otherwise fall back to the `?page=` query
-  // for backwards compatibility during development.
-  let page = 1;
-  if (pageContext.routeParams?.page) {
-    page = parseInt(pageContext.routeParams.page, 10);
-  } else {
-    // query string fallback
-    let urlObj = pageContext.urlParsed;
-    if (!urlObj || typeof urlObj.searchParams?.get !== "function") {
-      const s = pageContext.urlOriginal || "http://localhost/";
-      urlObj = new URL(s, "http://localhost");
-    }
-    page = parseInt(urlObj.searchParams.get("page") || "1", 10);
+  // determine page from query string
+  // `pageContext.url` is now a proxy; use `urlParsed` which is a URL object
+  // ready to query.  see warning printed earlier in the log.
+  // https://vike.dev/migration/0.4.23
+  let urlObj = pageContext.urlParsed;
+  if (!urlObj || typeof urlObj.searchParams?.get !== "function") {
+    // fallback to constructing our own URL; using base avoids invalid URL errors
+    const s = pageContext.urlOriginal || "http://localhost/";
+    urlObj = new URL(s, "http://localhost");
   }
+  let page = parseInt(urlObj.searchParams.get("page") || "1", 10);
   if (isNaN(page) || page < 1) page = 1;
 
   const totalPages = Math.ceil(posts.length / PAGE_SIZE) || 1;
