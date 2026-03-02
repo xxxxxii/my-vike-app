@@ -1,20 +1,19 @@
 <template>
   <main class="home">
     <header class="hero">
-      <h1 class="title">Welcome to My Vike Blog</h1>
-      <p class="tagline">A minimal Markdown-powered blog built with Vike + Vue. Read posts, search, and enjoy fast static pages.</p>
+      <h1 class="title">欢迎来到我的 Vike 博客</h1>
+      <p class="tagline">这是一个基于 Vike + Vue 的轻量级 Markdown 博客。浏览文章、使用搜索，并享受预渲染带来的高速体验。</p>
       <p class="actions">
         <a class="btn" href="/blog">查看文章 &raquo;</a>
-        <a class="muted" href="/search">快速搜索</a>
+        <a class="muted" href="/search">搜索文章</a>
       </p>
     </header>
 
     <section class="about">
-      <h2>About this site</h2>
+      <h2>关于本站</h2>
       <p>
-        This blog demonstrates a clean Vike + Vite setup with Markdown content, tag filtering,
-        client-side search, RSS generation and Giscus comments. Posts are pre-rendered for
-        optimal performance while interactive widgets are loaded on the client.
+        本站演示了一个使用 Vike + Vite 构建的博客模版，支持 Markdown 写作、标签过滤、
+        客户端搜索、RSS 生成与 Giscus 评论。文章在构建时预渲染以获得最佳性能，交互式组件在客户端按需加载。
       </p>
     </section>
 
