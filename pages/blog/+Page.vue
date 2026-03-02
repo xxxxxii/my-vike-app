@@ -42,9 +42,11 @@ function formatDate(iso: string) {
 }
 
 function go(p: number) {
-  const url = new URL(window.location.href);
-  url.searchParams.set("page", String(p));
-  window.location.href = url.toString();
+  if (p <= 1) {
+    window.location.href = "/blog";
+  } else {
+    window.location.href = `/blog/${p}`;
+  }
 }
 </script>
 
