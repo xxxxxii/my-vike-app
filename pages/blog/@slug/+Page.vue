@@ -4,7 +4,9 @@
     <p class="meta">
       {{ formatDate(post.date) }} · {{ post.readTime }} min 阅读
     </p>
-    <div class="content" v-html="post.content"></div>
+    <client-only>
+      <MdPreview v-if="post.markdown" :id="editorId" :modelValue="post.markdown" />
+    </client-only>
     <p><a href="/blog">← 返回博客列表</a></p>
     <!-- Giscus comments section (only render on client to avoid SSR work) -->
     <client-only>
@@ -19,8 +21,11 @@ import { useData } from "vike-vue/useData";
 import { useConfig } from "vike-vue/useConfig";
 import type { Data } from "./+data";
 import Comments from "../../../components/Comments.vue";
+import { MdPreview } from "md-editor-v3";
+import "md-editor-v3/lib/preview.css";
 
 const { post } = useData<Data>();
+const editorId = `md-preview-${Math.random().toString(36).slice(2, 9)}`;
 
 // set document title and description for SEO
 if (post) {
@@ -69,52 +74,68 @@ function formatDate(iso: string) {
   color: #333;
 }
 
+/* MdPreview styles override for custom theming */
+:deep(.md-editor-preview) {
+  background: transparent;
+  padding: 0;
+}
+
+:deep(.md-editor-preview-wrapper) {
+  padding: 0;
+}
+
+:deep(.md-preview) {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #333;
+}
+
 /* Markdown content styling */
-.content h1,
-.content h2,
-.content h3,
-.content h4,
-.content h5,
-.content h6 {
+:deep(.md-preview h1),
+:deep(.md-preview h2),
+:deep(.md-preview h3),
+:deep(.md-preview h4),
+:deep(.md-preview h5),
+:deep(.md-preview h6) {
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
   font-weight: 600;
   line-height: 1.3;
 }
 
-.content h1 { font-size: 1.8rem; }
-.content h2 { font-size: 1.5rem; }
-.content h3 { font-size: 1.3rem; }
-.content h4 { font-size: 1.1rem; }
-.content h5,
-.content h6 { font-size: 1rem; }
+:deep(.md-preview h1) { font-size: 1.8rem; }
+:deep(.md-preview h2) { font-size: 1.5rem; }
+:deep(.md-preview h3) { font-size: 1.3rem; }
+:deep(.md-preview h4) { font-size: 1.1rem; }
+:deep(.md-preview h5),
+:deep(.md-preview h6) { font-size: 1rem; }
 
-.content p {
+:deep(.md-preview p) {
   margin: 1rem 0;
 }
 
-.content a {
+:deep(.md-preview a) {
   color: #2563eb;
   text-decoration: none;
   border-bottom: 1px dotted #2563eb;
 }
 
-.content a:hover {
+:deep(.md-preview a:hover) {
   color: #1e4fd8;
   border-bottom-color: #1e4fd8;
 }
 
-.content ul,
-.content ol {
+:deep(.md-preview ul),
+:deep(.md-preview ol) {
   margin: 1rem 0;
   padding-left: 2rem;
 }
 
-.content li {
+:deep(.md-preview li) {
   margin-bottom: 0.5rem;
 }
 
-.content blockquote {
+:deep(.md-preview blockquote) {
   margin: 1.5rem 0;
   padding: 0.75rem 1rem;
   border-left: 4px solid #2563eb;
@@ -122,7 +143,7 @@ function formatDate(iso: string) {
   color: #444;
 }
 
-.content code {
+:deep(.md-preview code:not(pre code)) {
   background: #f5f5f5;
   padding: 0.2rem 0.4rem;
   border-radius: 3px;
@@ -131,7 +152,7 @@ function formatDate(iso: string) {
   color: #d63384;
 }
 
-.content pre {
+:deep(.md-preview pre) {
   background: #282c34;
   color: #abb2bf;
   padding: 1rem;
@@ -144,62 +165,39 @@ function formatDate(iso: string) {
   position: relative;
 }
 
-.content pre::before {
-  content: attr(data-lang);
-  position: absolute;
-  top: 0;
-  right: 0;
-  background: rgba(0, 0, 0, 0.3);
-  color: #abb2bf;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0 6px 0 6px;
-  font-size: 0.75rem;
-  font-family: monospace;
-}
-
-.content pre code {
+:deep(.md-preview pre code) {
   background: none;
   padding: 0;
   color: inherit;
   font-size: 0.9rem;
 }
 
-/* Syntax highlighting for inline code */
-.content code.language-js,
-.content code.language-ts,
-.content code.language-vue,
-.content code.language-python,
-.content code.language-bash,
-.content code.language-html {
-  color: #abb2bf;
-}
-
-.content img {
+:deep(.md-preview img) {
   max-width: 100%;
   height: auto;
   border-radius: 6px;
   margin: 1rem 0;
 }
 
-.content table {
+:deep(.md-preview table) {
   border-collapse: collapse;
   width: 100%;
   margin: 1rem 0;
 }
 
-.content th,
-.content td {
+:deep(.md-preview th),
+:deep(.md-preview td) {
   border: 1px solid #ddd;
   padding: 0.75rem;
   text-align: left;
 }
 
-.content th {
+:deep(.md-preview th) {
   background: #f5f5f5;
   font-weight: 600;
 }
 
-.content hr {
+:deep(.md-preview hr) {
   border: none;
   border-top: 2px solid #eee;
   margin: 2rem 0;
