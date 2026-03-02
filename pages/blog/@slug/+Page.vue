@@ -4,9 +4,26 @@
     <p class="meta">
       {{ formatDate(post.date) }} · {{ post.readTime }} min 阅读
     </p>
-    <client-only>
-      <MdPreview v-if="post.markdown" :id="editorId" :modelValue="post.markdown" />
-    </client-only>
+    
+    <div class="post-container">
+      <!-- Main content -->
+      <div class="post-content">
+        <client-only>
+          <MdPreview v-if="post.markdown" :id="editorId" :modelValue="post.markdown" />
+        </client-only>
+      </div>
+      
+      <!-- Table of contents sidebar -->
+      <aside class="toc-sidebar">
+        <client-only>
+          <div v-if="post.markdown" class="toc-container">
+            <div class="toc-title">目录</div>
+            <MdCatalog :editorId="editorId" />
+          </div>
+        </client-only>
+      </aside>
+    </div>
+    
     <p><a href="/blog">← 返回博客列表</a></p>
     <!-- Giscus comments section (only render on client to avoid SSR work) -->
     <client-only>
@@ -21,7 +38,7 @@ import { useData } from "vike-vue/useData";
 import { useConfig } from "vike-vue/useConfig";
 import type { Data } from "./+data";
 import Comments from "../../../components/Comments.vue";
-import { MdPreview } from "md-editor-v3";
+import { MdPreview, MdCatalog } from "md-editor-v3";
 import "md-editor-v3/lib/preview.css";
 
 const { post } = useData<Data>();
@@ -51,7 +68,6 @@ function formatDate(iso: string) {
 
 <style scoped>
 .post-detail {
-  max-width: 700px;
   margin: 2rem auto;
   padding: 0 1rem;
 }
@@ -66,6 +82,88 @@ function formatDate(iso: string) {
   color: #888;
   font-size: 0.9rem;
   margin-bottom: 1.5rem;
+}
+
+/* Two-column layout with TOC */
+.post-container {
+  display: flex;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.post-content {
+  flex: 1;
+  min-width: 0;
+  max-width: 700px;
+}
+
+.toc-sidebar {
+  width: 280px;
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+  display: none;
+}
+
+.toc-container {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f9fafb;
+  font-size: 0.9rem;
+}
+
+.toc-title {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1f2937;
+  font-size: 1rem;
+}
+
+/* Table of contents styling */
+:deep(.md-catalog) {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+:deep(.md-catalog li) {
+  margin: 0;
+  padding-left: 0;
+}
+
+:deep(.md-catalog a) {
+  color: #6b7280;
+  text-decoration: none;
+  border-bottom: none;
+  transition: color 0.2s;
+  display: block;
+  padding: 0.4rem 0;
+}
+
+:deep(.md-catalog a:hover) {
+  color: #2563eb;
+}
+
+:deep(.md-catalog a.active) {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+/* Show TOC on desktop screens */
+@media (min-width: 1024px) {
+  .toc-sidebar {
+    display: block;
+  }
+  
+  .post-detail {
+    max-width: unset;
+  }
+  
+  .post-container {
+    padding: 0 1rem;
+  }
 }
 
 .content {
@@ -203,6 +301,17 @@ function formatDate(iso: string) {
   margin: 2rem 0;
 }
 
+@media (max-width: 1023px) {
+  .post-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .toc-sidebar {
+    display: none;
+  }
+}
+
 @media (max-width: 600px) {
   .post-detail {
     padding: 0 0.5rem;
@@ -214,10 +323,8 @@ function formatDate(iso: string) {
   .meta {
     font-size: 0.9rem;
   }
-  .content {
-    font-size: 0.95rem;
+  .post-content {
+    max-width: 100%;
   }
-  .content h2 { font-size: 1.3rem; }
-  .content h3 { font-size: 1.1rem; }
 }
 </style>
