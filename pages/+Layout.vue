@@ -4,9 +4,9 @@
   <div class="layout">
     <Sidebar>
       <Logo />
-      <Link href="/"> Welcome </Link>
+      <Link href="/blog"> Blog </Link>
       <Link href="/todo"> Todo </Link>
-      <Link href="/star-wars"> Data Fetching </Link>
+      <!-- <Link href="/star-wars"> Data Fetching </Link> -->
     </Sidebar>
     <Content><slot /></Content>
   </div>
