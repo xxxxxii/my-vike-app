@@ -5,7 +5,15 @@ excerpt: "介绍如何使用 Vite 与 Vike 快速搭建可渲染为 HTML 的交�
 readTime: 5
 ---
 
-这里是文章正文示例。
+## 官网地址
+
+[https://vike.dev](https://vike.dev)
+
+## 创建项目
+
+```bash
+npm create vike@latest --- --vue
+```
 
 ```vue
 <template>
