@@ -8,19 +8,19 @@
     <div class="post-container">
       <!-- Main content -->
       <div class="post-content">
-        <client-only>
-          <MdPreview v-if="post.markdown" :id="editorId" :modelValue="post.markdown" />
-        </client-only>
+        <MdPreview v-if="post.markdown" :id="editorId" :modelValue="post.markdown" />
       </div>
       
       <!-- Table of contents sidebar -->
       <aside class="toc-sidebar">
-        <client-only>
-          <div v-if="post.markdown" class="toc-container">
-            <div class="toc-title">目录</div>
-            <MdCatalog :editorId="editorId" />
-          </div>
-        </client-only>
+        <!-- container always rendered (even server-side) so the user sees the
+             outline box; the catalog itself can render on the server too. -->
+        <div v-if="post.markdown" class="toc-container">
+          <div class="toc-title">目录</div>
+          <p v-if="!tocReady" class="toc-loading">正在加载目录…</p>
+          <!-- pass scrollElement to ensure the catalog can track scroll position -->
+          <MdCatalog v-if="tocReady" :editorId="editorId" scrollElement="html" />
+        </div>
       </aside>
     </div>
     
@@ -40,9 +40,17 @@ import type { Data } from "./+data";
 import Comments from "../../../components/Comments.vue";
 import { MdPreview, MdCatalog } from "md-editor-v3";
 import "md-editor-v3/lib/preview.css";
+import { ref, onMounted } from "vue";
 
 const { post } = useData<Data>();
 const editorId = `md-preview-${Math.random().toString(36).slice(2, 9)}`;
+
+// flag used to show a loading message until the catalog component
+// has been mounted on the client.  It can never be true during SSR.
+const tocReady = ref(false);
+onMounted(() => {
+  tocReady.value = true;
+});
 
 // set document title and description for SEO
 if (post) {
@@ -103,7 +111,8 @@ function formatDate(iso: string) {
   position: sticky;
   top: 100px;
   height: fit-content;
-  display: none;
+  /* ensure sidebar is always rendered; layout will stack on small screens */
+  display: block;
 }
 
 .toc-container {
@@ -119,6 +128,12 @@ function formatDate(iso: string) {
   margin-bottom: 1rem;
   color: #1f2937;
   font-size: 1rem;
+}
+
+.toc-loading {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
 }
 
 /* Table of contents styling */
@@ -151,11 +166,8 @@ function formatDate(iso: string) {
   font-weight: 600;
 }
 
-/* Show TOC on desktop screens */
-@media (min-width: 1024px) {
-  .toc-sidebar {
-    display: block;
-  }
+/* Show TOC on larger screens (desktop + tablet) */
+@media (min-width: 768px) {
   
   .post-detail {
     max-width: unset;
