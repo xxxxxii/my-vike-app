@@ -4,6 +4,14 @@ import type { PageContextServer } from "vike/types";
 import matter from "gray-matter";
 import { useConfig } from "vike-vue/useConfig";
 
+// prerender the blog list page at build time so the index is a static HTML
+export const prerender = true;
+
+// perform the glob at module init so the resolver is cached and not repeated
+// on each loader invocation. when prerendering, the loader will run once
+// during the build and consume this cached map.
+const modules = import.meta.glob("/content/blog/*.md", { as: "raw" });
+
 export type Post = {
   title: string;
   slug: string;
@@ -16,12 +24,7 @@ export type Post = {
 export type Data = Awaited<ReturnType<typeof data>>;
 
 export async function data(pageContext: PageContextServer) {
-  // Load markdown files under content/blog
-  // historical working pattern: relative to this TS file, two levels up to
-  // project root, then into content/blog.  we request raw text via `as:` so
-  // no further processing is done.
-  const modules = import.meta.glob("/content/blog/*.md", { as: "raw" });
-  console.log("Found modules:", Object.keys(modules));
+  // Load markdown files under content/blog using the precomputed `modules` map
 
   const config = useConfig();
   config({
