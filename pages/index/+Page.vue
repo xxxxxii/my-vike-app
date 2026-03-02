@@ -1,8 +1,8 @@
 <template>
   <main class="home">
     <header class="hero">
-      <h1 class="title">欢迎来到我的 Vike 博客</h1>
-      <p class="tagline">这是一个基于 Vike + Vue 的轻量级 Markdown 博客。浏览文章、使用搜索，并享受预渲染带来的高速体验。</p>
+      <h1 class="title">欢迎来到我的 博客</h1>
+      <p class="tagline">这是一个基于 Vike + Vue 的轻量级 Markdown 博客，静态生成。浏览文章、使用搜索，并享受预渲染带来的高速体验。</p>
       <p class="actions">
         <a class="btn" href="/blog">查看文章 &raquo;</a>
         <a class="muted" href="/search">搜索文章</a>
@@ -16,13 +16,10 @@
         客户端搜索、RSS 生成与 Giscus 评论。文章在构建时预渲染以获得最佳性能，交互式组件在客户端按需加载。
       </p>
     </section>
-
-    <Counter />
   </main>
 </template>
 
 <script setup lang="ts">
-import Counter from "../../components/Counter.vue";
 </script>
 
 <style scoped>

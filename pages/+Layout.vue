@@ -4,6 +4,7 @@
   <div class="layout">
     <Sidebar>
       <Logo />
+      <Link href="/"> Home </Link>
       <Link href="/blog"> Blog </Link>
       <Link href="/todo"> Todo </Link>
       <!-- <Link href="/star-wars"> Data Fetching </Link> -->

@@ -28,9 +28,13 @@ const isActive = computed(() => {
 <style scoped>
 a {
   padding: 2px 10px;
-  margin-left: -10px;
+  margin: 4px 0;
+  text-decoration: none;
+  color: #424242;
+
 }
 a.active {
   background-color: #eee;
+  border-radius: 4px;
 }
 </style>

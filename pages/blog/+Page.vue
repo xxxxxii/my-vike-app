@@ -33,7 +33,7 @@ import { ref, computed } from "vue";
 import type { Data } from "./+data";
 
 const { allPosts } = useData<Data>();
-const PAGE_SIZE = 3;
+const PAGE_SIZE = 10;
 
 const currentPage = ref(1);
 
