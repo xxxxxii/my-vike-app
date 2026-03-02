@@ -8,19 +8,19 @@
     <div class="post-container">
       <!-- Main content -->
       <div class="post-content">
-        <MdPreview v-if="post.markdown" :id="editorId" :modelValue="post.markdown" />
+        <client-only>
+          <MdPreview v-if="post.markdown" :id="editorId" :modelValue="post.markdown" />
+        </client-only>
       </div>
       
       <!-- Table of contents sidebar -->
       <aside class="toc-sidebar">
-        <!-- container always rendered (even server-side) so the user sees the
-             outline box; the catalog itself can render on the server too. -->
-        <div v-if="post.markdown" class="toc-container">
-          <div class="toc-title">目录</div>
-          <p v-if="!tocReady" class="toc-loading">正在加载目录…</p>
-          <!-- pass scrollElement to ensure the catalog can track scroll position -->
-          <MdCatalog v-if="tocReady" :editorId="editorId" scrollElement="html" />
-        </div>
+        <client-only>
+          <div v-if="post.markdown && showCatalog" class="toc-container">
+            <div class="toc-title">目录</div>
+            <MdCatalog :editorId="editorId" scrollElement="html" />
+          </div>
+        </client-only>
       </aside>
     </div>
     
@@ -44,12 +44,13 @@ import { ref, onMounted } from "vue";
 
 const { post } = useData<Data>();
 const editorId = `md-preview-${Math.random().toString(36).slice(2, 9)}`;
+const showCatalog = ref(false);
 
-// flag used to show a loading message until the catalog component
-// has been mounted on the client.  It can never be true during SSR.
-const tocReady = ref(false);
+// Delay showing catalog to ensure MdPreview is fully rendered
 onMounted(() => {
-  tocReady.value = true;
+  setTimeout(() => {
+    showCatalog.value = true;
+  }, 100);
 });
 
 // set document title and description for SEO
@@ -128,12 +129,6 @@ function formatDate(iso: string) {
   margin-bottom: 1rem;
   color: #1f2937;
   font-size: 1rem;
-}
-
-.toc-loading {
-  font-size: 0.85rem;
-  color: #6b7280;
-  margin-bottom: 0.5rem;
 }
 
 /* Table of contents styling */
