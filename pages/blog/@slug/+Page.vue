@@ -1,20 +1,20 @@
 <template>
-  <article v-if="post" class="post-detail">
+  <article v-if="post" class="post-detail" style="width: 100%;">
     <h1>{{ post.title }}</h1>
     <p class="meta">
       {{ formatDate(post.date) }} · {{ post.readTime }} min 阅读
     </p>
     
-    <div class="post-container">
+    <div class="post-container" style="display:flex;">
       <!-- Main content -->
-      <div class="post-content">
-        <client-only>
-          <MdPreview v-if="post.markdown" :id="editorId" :modelValue="post.markdown" @onGetCatalog="onGetCatalog" />
+      <div class="post-content" style="flex:1;width: calc(100% - 280px)">
+        <client-only style="width: 100%;">
+          <MdPreview v-if="post.markdown" style="width: 100%;" :id="editorId" :modelValue="post.markdown" @onGetCatalog="onGetCatalog" />
         </client-only>
       </div>
       
       <!-- Table of contents sidebar -->
-      <aside class="toc-sidebar">
+      <aside class="toc-sidebar" style="flex: none;">
         <client-only>
           <div class="toc-container">
             <div class="toc-title">目录</div>
@@ -219,6 +219,33 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
+/* Custom TOC link styles */
+.toc-list {
+  display: flex;
+  flex-direction: column;
+}
+.toc-link {
+  color: #6b7280;
+  text-decoration: none;
+  padding: 0.25rem 0;
+  transition: color 0.15s, padding-left 0.15s;
+  font-size: 0.95rem;
+}
+.toc-link:hover {
+  color: #2563eb;
+}
+.toc-active {
+  color: #1e40af;
+  font-weight: 700;
+}
+.toc-h1 { padding-left: 0rem; }
+.toc-h2 { padding-left: 0.5rem; }
+.toc-h3 { padding-left: 1rem; }
+.toc-h4 { padding-left: 1.5rem; }
+.toc-h5 { padding-left: 2rem; }
+.toc-h6 { padding-left: 2.5rem; }
+
+
 /* Show TOC on larger screens (desktop + tablet) */
 @media (min-width: 768px) {
   
@@ -391,5 +418,31 @@ onUnmounted(() => {
   .post-content {
     max-width: 100%;
   }
+}
+
+/* Safety rules to prevent code-folding or wide content from expanding the page
+   - ensure flex container and preview have constrained width
+   - allow horizontal scrolling inside code blocks instead of pushing layout */
+.post-container {
+  min-width: 0;
+}
+.post-detail,
+.post-content,
+:deep(.md-editor-preview),
+:deep(.md-editor-preview-wrapper),
+:deep(.md-preview) {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+:deep(.md-preview pre) {
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: auto;
+  word-break: normal;
+}
+
+:deep(.md-preview code) {
+  word-break: break-word;
 }
 </style>

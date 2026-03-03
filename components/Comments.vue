@@ -53,7 +53,7 @@ onMounted(() => {
 
 <style scoped>
 .giscus-wrapper {
-  max-width: 700px;
+  /* max-width: 700px; */
   margin: 2rem auto;
   padding: 0 1rem;
   border-top: 1px solid #eee;

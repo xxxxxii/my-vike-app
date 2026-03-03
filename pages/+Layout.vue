@@ -36,7 +36,7 @@ a {
 <style scoped>
 .layout {
   display: flex;
-  max-width: 900px;
+  max-width:1200px;
   margin: auto;
 }
 .content {
