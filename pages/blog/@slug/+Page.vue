@@ -62,7 +62,8 @@ const { post } = useData<Data>();
 const editorId = `md-preview-${Math.random().toString(36).slice(2, 9)}`;
 const showCatalog = ref(false);
 
-const scrollElement = document.documentElement;
+// scrollable container for the article; default to root element
+let scrollElement: HTMLElement | Document = document.documentElement;
 
 // set document title and description for SEO
 if (post) {
@@ -92,22 +93,45 @@ function onGetCatalog(catalog: any) {
 }
 
 // scroll handler to update activeCatalogId based on viewport position
-function updateActiveOnScroll() {
+// simple throttle wrapper to limit invocation frequency
+function throttle(fn: () => void, wait = 100) {
+  let last = 0;
+  return () => {
+    const now = Date.now();
+    if (now - last >= wait) {
+      last = now;
+      fn();
+    }
+  };
+}
+
+const throttledUpdate = throttle(() => {
   if (!catalogList.value.length) return;
   const offsets = catalogList.value.map((item) => {
     const el = document.getElementById(item.anchor);
     return el ? el.getBoundingClientRect().top : Infinity;
   });
-  // find first header that is >= 0 from top (or last negative)
   let idx = offsets.findIndex((t) => t >= 0);
   if (idx === -1) idx = offsets.length - 1;
   activeCatalogId.value = catalogList.value[idx]?.anchor || "";
+});
+
+// scroll handler to update activeCatalogId based on viewport position
+function updateActiveOnScroll() {
+  if (!catalogList.value.length) return;
+  throttledUpdate();
 }
 
 function scrollToAnchor(anchor: string) {
   const el = document.getElementById(anchor);
   if (el) {
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    // smooth scroll using scrollElement if available
+    const top = el.getBoundingClientRect().top + (scrollElement instanceof HTMLElement ? scrollElement.scrollTop : window.scrollY);
+    if (scrollElement && typeof (scrollElement as HTMLElement).scrollTo === 'function') {
+      (scrollElement as HTMLElement).scrollTo({ top, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top, behavior: 'smooth' });
+    }
   }
 }
 
@@ -121,15 +145,20 @@ function formatDate(iso: string) {
 
 // attach scroll listener once mounted
 onMounted(() => {
+  // when mounted, determine the actual scrolling element (could be body or html)
+  scrollElement = document.scrollingElement || document.documentElement;
   setTimeout(() => {
     showCatalog.value = true;
+    // run once to set initial active state
+    updateActiveOnScroll();
   }, 500);
-  window.addEventListener("scroll", updateActiveOnScroll, { passive: true });
+  // listen on the scrolling element rather than window
+  scrollElement.addEventListener("scroll", updateActiveOnScroll, { passive: true });
 });
 
 // cleanup
 onUnmounted(() => {
-  window.removeEventListener("scroll", updateActiveOnScroll);
+  scrollElement.removeEventListener("scroll", updateActiveOnScroll);
 });
 </script>
 
