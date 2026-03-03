@@ -1,7 +1,7 @@
 <template>
   <div id="page-container">
     <div id="page-content" style="padding-bottom: 50px; min-height: 100vh">
-      <div style="margin: 10px;">
+      <div>
         <slot />
       </div>
     </div>

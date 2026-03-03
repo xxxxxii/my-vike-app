@@ -1,35 +1,37 @@
 <template>
-  <article v-if="post" class="post-detail" style="width: 100%;">
+  <article v-if="post" class="post-detail">
     <h1>{{ post.title }}</h1>
     <p class="meta">
       {{ formatDate(post.date) }} · {{ post.readTime }} min 阅读
     </p>
-    
+
     <div class="post-container" style="display:flex;">
       <!-- Main content -->
       <div class="post-content" style="flex:1;width: calc(100% - 280px)">
         <client-only style="width: 100%;">
-          <MdPreview v-if="post.markdown" style="width: 100%;" :id="editorId" :modelValue="post.markdown" @onGetCatalog="onGetCatalog" />
+          <MdPreview v-if="post.markdown" :mdHeadingId="mdHeadingId" style="width: 100%;" :id="editorId"
+                     :modelValue="post.markdown" @onGetCatalog="onGetCatalog"/>
         </client-only>
       </div>
-      
+
       <!-- Table of contents sidebar -->
       <aside class="toc-sidebar" style="flex: none;">
         <client-only>
           <div class="toc-container">
             <div class="toc-title">目录</div>
             <!-- Custom catalog rendering instead of MdCatalog -->
-            <nav v-if="catalogList?.length > 0" class="toc-list" style="display: flex; flex-direction: column; gap: 4px;">
+            <nav v-if="catalogList?.length > 0" class="toc-list"
+                 style="display: flex; flex-direction: column; gap: 4px;">
               <a
-                v-for="item in catalogList"
-                :key="item.text"
-                :href="`#${item.anchor}`"
-                :class="[
+                  v-for="item in catalogList"
+                  :key="item.text"
+                  :href="`#${item.anchor}`"
+                  :class="[
                   'toc-link',
                   `toc-h${item.level}`,
                   { 'toc-active': activeCatalogId === item.anchor }
                 ]"
-                @click.prevent="scrollToAnchor(item.anchor)"
+                  @click.prevent="scrollToAnchor(item.anchor)"
               >
                 {{ item.text }}
               </a>
@@ -39,26 +41,27 @@
         </client-only>
       </aside>
     </div>
-    
+
     <p><a href="/blog">← 返回博客列表</a></p>
     <!-- Giscus comments section (only render on client to avoid SSR work) -->
     <client-only>
-      <Comments />
+      <Comments/>
     </client-only>
   </article>
   <p v-else>文章未找到。</p>
 </template>
 
 <script lang="ts" setup>
-import { useData } from "vike-vue/useData";
-import { useConfig } from "vike-vue/useConfig";
-import type { Data } from "./+data";
+import {useData} from "vike-vue/useData";
+import {useConfig} from "vike-vue/useConfig";
+import type {Data} from "./+data";
 import Comments from "../../../components/Comments.vue";
-import { MdPreview, MdCatalog } from "md-editor-v3";
+import {MdPreview, MdCatalog} from "md-editor-v3";
 import "md-editor-v3/lib/preview.css";
-import { ref, onMounted, onUnmounted } from "vue";
+import {ref, onMounted, onUnmounted, nextTick} from "vue";
+import {ClientOnly} from "vike-vue/ClientOnly";
 
-const { post } = useData<Data>();
+const {post} = useData<Data>();
 const editorId = `md-preview-${Math.random().toString(36).slice(2, 9)}`;
 const showCatalog = ref(false);
 
@@ -71,11 +74,17 @@ if (post) {
   config({
     title: post.title,
     meta: [
-      { name: "description", content: post.excerpt },
-      { property: "og:title", content: post.title },
-      { property: "og:description", content: post.excerpt },
+      {name: "description", content: post.excerpt},
+      {property: "og:title", content: post.title},
+      {property: "og:description", content: post.excerpt},
     ],
   });
+}
+
+interface CatalogItem {
+  level: number;
+  text: string;
+  index?: string;
 }
 
 // catalog items from MdPreview: array of { level, text, anchor }
@@ -83,11 +92,16 @@ const catalogList = ref<Array<{ level: number; text: string; anchor: string }>>(
 // id of currently active section (used to highlight toc link)
 const activeCatalogId = ref<string>("");
 
+const mdHeadingId = ({text, level, index}: CatalogItem) => `heading-${text}`;
+
 function onGetCatalog(catalog: any) {
   // md-editor-v3 passes the list of headers when ready
   catalogList.value = catalog || [];
   // set first item as active initially
   if (catalogList.value.length > 0) {
+    catalogList.value = catalogList.value?.map(item => {
+      return {...item, anchor: `heading-${item?.text}`}
+    })
     activeCatalogId.value = catalogList.value[0].anchor;
   }
 }
@@ -124,13 +138,16 @@ function updateActiveOnScroll() {
 
 function scrollToAnchor(anchor: string) {
   const el = document.getElementById(anchor);
+  console.log(el, anchor, 'el')
   if (el) {
+    console.log(el, 'el')
+    activeCatalogId.value = anchor;
     // smooth scroll using scrollElement if available
     const top = el.getBoundingClientRect().top + (scrollElement instanceof HTMLElement ? scrollElement.scrollTop : window.scrollY);
     if (scrollElement && typeof (scrollElement as HTMLElement).scrollTo === 'function') {
-      (scrollElement as HTMLElement).scrollTo({ top, behavior: 'smooth' });
+      (scrollElement as HTMLElement).scrollTo({top, behavior: 'smooth'});
     } else {
-      window.scrollTo({ top, behavior: 'smooth' });
+      window.scrollTo({top, behavior: 'smooth'});
     }
   }
 }
@@ -146,14 +163,18 @@ function formatDate(iso: string) {
 // attach scroll listener once mounted
 onMounted(() => {
   // when mounted, determine the actual scrolling element (could be body or html)
-  scrollElement = document.scrollingElement || document.documentElement;
+  const scrollElement = document;
+  console.log(scrollElement, 'scrollElement')
   setTimeout(() => {
     showCatalog.value = true;
     // run once to set initial active state
     updateActiveOnScroll();
   }, 500);
   // listen on the scrolling element rather than window
-  scrollElement.addEventListener("scroll", updateActiveOnScroll, { passive: true });
+  nextTick(() => {
+    scrollElement.addEventListener("scroll", updateActiveOnScroll, {passive: true});
+  });
+
 });
 
 // cleanup
@@ -253,6 +274,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
 }
+
 .toc-link {
   color: #6b7280;
   text-decoration: none;
@@ -260,28 +282,48 @@ onUnmounted(() => {
   transition: color 0.15s, padding-left 0.15s;
   font-size: 0.95rem;
 }
+
 .toc-link:hover {
   color: #2563eb;
 }
+
 .toc-active {
   color: #1e40af;
   font-weight: 700;
 }
-.toc-h1 { padding-left: 0rem; }
-.toc-h2 { padding-left: 0.5rem; }
-.toc-h3 { padding-left: 1rem; }
-.toc-h4 { padding-left: 1.5rem; }
-.toc-h5 { padding-left: 2rem; }
-.toc-h6 { padding-left: 2.5rem; }
+
+.toc-h1 {
+  padding-left: 0rem;
+}
+
+.toc-h2 {
+  padding-left: 0.5rem;
+}
+
+.toc-h3 {
+  padding-left: 1rem;
+}
+
+.toc-h4 {
+  padding-left: 1.5rem;
+}
+
+.toc-h5 {
+  padding-left: 2rem;
+}
+
+.toc-h6 {
+  padding-left: 2.5rem;
+}
 
 
 /* Show TOC on larger screens (desktop + tablet) */
 @media (min-width: 768px) {
-  
+
   .post-detail {
     max-width: unset;
   }
-  
+
   .post-container {
     padding: 0 1rem;
   }
@@ -322,12 +364,26 @@ onUnmounted(() => {
   line-height: 1.3;
 }
 
-:deep(.md-preview h1) { font-size: 1.8rem; }
-:deep(.md-preview h2) { font-size: 1.5rem; }
-:deep(.md-preview h3) { font-size: 1.3rem; }
-:deep(.md-preview h4) { font-size: 1.1rem; }
+:deep(.md-preview h1) {
+  font-size: 1.8rem;
+}
+
+:deep(.md-preview h2) {
+  font-size: 1.5rem;
+}
+
+:deep(.md-preview h3) {
+  font-size: 1.3rem;
+}
+
+:deep(.md-preview h4) {
+  font-size: 1.1rem;
+}
+
 :deep(.md-preview h5),
-:deep(.md-preview h6) { font-size: 1rem; }
+:deep(.md-preview h6) {
+  font-size: 1rem;
+}
 
 :deep(.md-preview p) {
   margin: 1rem 0;
@@ -427,7 +483,7 @@ onUnmounted(() => {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .toc-sidebar {
     display: none;
   }
@@ -438,14 +494,17 @@ onUnmounted(() => {
     padding: 0 0.5rem;
     margin: 1rem auto;
   }
+
   .post-detail h1 {
     font-size: 1.5rem;
   }
+
   .meta {
     font-size: 0.9rem;
   }
+
   .post-content {
-    max-width: 100%;
+    width: 100%;
   }
 }
 
@@ -455,13 +514,14 @@ onUnmounted(() => {
 .post-container {
   min-width: 0;
 }
+
 .post-detail,
 .post-content,
 :deep(.md-editor-preview),
 :deep(.md-editor-preview-wrapper),
 :deep(.md-preview) {
   box-sizing: border-box;
-  max-width: 100%;
+  width: 100%;
 }
 
 :deep(.md-preview pre) {
