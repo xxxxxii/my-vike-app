@@ -65,9 +65,6 @@ const {post} = useData<Data>();
 const editorId = `md-preview-${Math.random().toString(36).slice(2, 9)}`;
 const showCatalog = ref(false);
 
-// scrollable container for the article; default to root element
-let scrollElement: HTMLElement | Document = document.documentElement;
-
 // set document title and description for SEO
 if (post) {
   const config = useConfig();
@@ -138,6 +135,7 @@ function updateActiveOnScroll() {
 
 function scrollToAnchor(anchor: string) {
   const el = document.getElementById(anchor);
+  const scrollElement = document.scrollingElement;
   console.log(el, anchor, 'el')
   if (el) {
     console.log(el, 'el')
