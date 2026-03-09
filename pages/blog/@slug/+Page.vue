@@ -1,67 +1,87 @@
 <template>
   <article v-if="post" class="post-detail">
-    <!-- 文章头部 -->
-    <header class="post-header">
-      <a href="/blog" class="back-badge">
-        ← 返回列表
-      </a>
-      <h1 class="post-title">{{ post.title }}</h1>
-      <div class="post-meta">
-        <span class="meta-icon">📅</span>
-        <span>{{ formatDate(post.date) }}</span>
-        <span class="meta-sep">·</span>
-        <span class="meta-icon">⏱</span>
-        <span>{{ post.readTime }} min 阅读</span>
-      </div>
-    </header>
+    <!-- 文章内容区 -->
+    <div class="post-wrapper">
+      <!-- 返回导航 -->
+      <nav class="post-nav">
+        <a href="/blog" class="back-link">
+          <span class="back-icon">←</span>
+          返回文章列表
+        </a>
+      </nav>
 
-    <!-- 内容区域：双栏布局 -->
-    <div class="post-container">
-      <!-- 主内容 -->
-      <div class="post-content">
-        <ClientOnly>
-          <MdPreview
-            v-if="post.markdown"
-            :mdHeadingId="mdHeadingId"
-            :id="editorId"
-            :modelValue="post.markdown"
-            @onGetCatalog="onGetCatalog"
-            class="md-preview-custom"
-          />
-        </ClientOnly>
-      </div>
-
-      <!-- 目录侧边栏 -->
-      <aside class="toc-sidebar" v-if="catalogList.length > 0">
-        <div class="toc-card">
-          <div class="toc-title">
-            <span class="toc-icon">📑</span>
-            文章目录
-          </div>
-          <nav class="toc-nav">
-            <a
-              v-for="item in catalogList"
-              :key="item.anchor"
-              :href="`#${item.anchor}`"
-              class="toc-link"
-              :class="[`toc-level-${item.level}`, { active: activeCatalogId === item.anchor }]"
-              @click.prevent="scrollToAnchor(item.anchor)"
-            >
-              {{ item.text }}
-            </a>
-          </nav>
+      <!-- 文章头部 -->
+      <header class="post-header">
+        <h1 class="post-title">{{ post.title }}</h1>
+        <div class="post-meta">
+          <span class="meta-item">
+            <span class="meta-icon">📅</span>
+            {{ formatDate(post.date) }}
+          </span>
+          <span class="meta-sep">|</span>
+          <span class="meta-item">
+            <span class="meta-icon">⏱</span>
+            {{ post.readTime }} min 阅读
+          </span>
         </div>
-      </aside>
-    </div>
+      </header>
 
-    <!-- 评论区 -->
-    <div class="comments-section">
-      <ClientOnly>
-        <Comments />
-      </ClientOnly>
+      <!-- 主内容区 -->
+      <div class="post-body">
+        <div class="post-content">
+          <ClientOnly>
+            <MdPreview
+              v-if="post.markdown"
+              :mdHeadingId="mdHeadingId"
+              :id="editorId"
+              :modelValue="post.markdown"
+              @onGetCatalog="onGetCatalog"
+              class="md-preview-custom"
+            />
+          </ClientOnly>
+        </div>
+
+        <!-- 右侧固定目录 -->
+        <aside class="toc-sidebar" v-if="catalogList.length > 0">
+          <div class="toc-card">
+            <div class="toc-header">
+              <span class="toc-icon">📑</span>
+              <span class="toc-title">文章目录</span>
+            </div>
+            <nav class="toc-nav">
+              <a
+                v-for="item in catalogList"
+                :key="item.anchor"
+                :href="`#${item.anchor}`"
+                class="toc-link"
+                :class="[`toc-level-${item.level}`, { active: activeCatalogId === item.anchor }]"
+                @click.prevent="scrollToAnchor(item.anchor)"
+              >
+                {{ item.text }}
+              </a>
+            </nav>
+          </div>
+        </aside>
+      </div>
+
+      <!-- 底部导航 -->
+      <nav class="post-footer-nav">
+        <a href="/blog" class="footer-link">← 返回文章列表</a>
+      </nav>
+
+      <!-- 评论区 -->
+      <section class="comments-section">
+        <h3 class="comments-title">💬 评论</h3>
+        <ClientOnly>
+          <Comments />
+        </ClientOnly>
+      </section>
     </div>
   </article>
+
+  <!-- 未找到 -->
   <div v-else class="not-found">
+    <div class="not-found-icon">📄</div>
     <h1>文章未找到</h1>
     <p>抱歉，您访问的文章不存在或已被删除。</p>
     <a href="/blog" class="back-home">← 返回博客列表</a>
@@ -180,99 +200,134 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* 整体容器 */
 .post-detail {
-  max-width: 1100px;
+  min-height: 100vh;
+  background: #fafbfc;
+}
+
+.post-wrapper {
+  max-width: 960px;
   margin: 0 auto;
-  padding: 2rem 1.25rem;
+  padding: 2rem 1.5rem 4rem;
+}
+
+/* 顶部导航 */
+.post-nav {
+  margin-bottom: 1.5rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  background: #fff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  color: var(--color-text-muted, #6b7280);
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.back-link:hover {
+  border-color: var(--color-primary, #667eea);
+  color: var(--color-primary, #667eea);
+}
+
+.back-icon {
+  font-size: 0.9rem;
 }
 
 /* 文章头部 */
 .post-header {
-  max-width: 800px;
-  margin: 0 auto 2.5rem;
-  text-align: center;
-}
-
-.back-badge {
-  display: inline-block;
-  padding: 0.4rem 0.85rem;
-  background: #f5f7fa;
-  color: #666;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  text-decoration: none;
-  margin-bottom: 1.25rem;
-  transition: all 0.15s ease;
-}
-
-.back-badge:hover {
-  background: #eef0f5;
-  color: var(--color-primary, #0070f3);
+  background: #fff;
+  border-radius: 16px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--color-border, #eee);
 }
 
 .post-title {
-  font-size: 2.4rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
-  color: var(--color-text, #333);
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0 0 1.25rem;
+  color: #1a1a2e;
   letter-spacing: -0.6px;
-  line-height: 1.3;
+  line-height: 1.25;
 }
 
 .post-meta {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   font-size: 0.9rem;
   color: var(--color-text-muted, #888);
 }
 
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 .meta-icon {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
 }
 
 .meta-sep {
-  opacity: 0.4;
+  color: #ddd;
 }
 
-/* 内容容器 */
-.post-container {
+/* 内容区 */
+.post-body {
   display: flex;
-  gap: 2.5rem;
-  max-width: 1100px;
-  margin: 0 auto;
+  gap: 2rem;
+  position: relative;
 }
 
 .post-content {
   flex: 1;
   min-width: 0;
-  max-width: 800px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem 2.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--color-border, #eee);
 }
 
-/* 目录侧边栏 */
+/* 固定目录 */
 .toc-sidebar {
-  width: 240px;
+  width: 200px;
   flex-shrink: 0;
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
 }
 
 .toc-card {
-  position: sticky;
-  top: 100px;
-  background: #fafbfc;
-  border: 1px solid var(--color-border, #eee);
+  background: #fff;
   border-radius: 12px;
   padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--color-border, #eee);
 }
 
-.toc-title {
-  font-weight: 600;
-  font-size: 0.95rem;
-  color: var(--color-text, #333);
-  margin-bottom: 1rem;
+.toc-header {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-text, #333);
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-border, #eee);
 }
 
 .toc-icon {
@@ -282,109 +337,158 @@ onUnmounted(() => {
 .toc-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.25rem;
 }
 
 .toc-link {
   color: var(--color-text-muted, #777);
   text-decoration: none;
-  font-size: 0.85rem;
-  padding: 0.3rem 0;
-  border-left: 2px solid transparent;
-  padding-left: 0.75rem;
+  font-size: 0.82rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
   transition: all 0.12s ease;
   line-height: 1.4;
 }
 
 .toc-link:hover {
-  color: var(--color-primary, #0070f3);
-  border-left-color: #ddd;
+  background: #f5f7fa;
+  color: var(--color-primary, #667eea);
 }
 
 .toc-link.active {
-  color: var(--color-primary, #0070f3);
-  border-left-color: var(--color-primary, #0070f3);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
   font-weight: 500;
 }
 
 .toc-level-1 { font-weight: 500; }
-.toc-level-2 { padding-left: 1.25rem; }
-.toc-level-3 { padding-left: 1.75rem; font-size: 0.82rem; }
-.toc-level-4 { padding-left: 2.25rem; font-size: 0.8rem; }
-.toc-level-5 { padding-left: 2.75rem; font-size: 0.78rem; }
-.toc-level-6 { padding-left: 3.25rem; font-size: 0.76rem; }
+.toc-level-2 { padding-left: 1rem; }
+.toc-level-3 { padding-left: 1.5rem; font-size: 0.78rem; }
+.toc-level-4 { padding-left: 2rem; font-size: 0.75rem; }
+.toc-level-5 { padding-left: 2.5rem; font-size: 0.72rem; }
+.toc-level-6 { padding-left: 3rem; font-size: 0.7rem; }
+
+/* 底部导航 */
+.post-footer-nav {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border, #eee);
+}
+
+.footer-link {
+  color: var(--color-primary, #667eea);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
 
 /* 评论区 */
 .comments-section {
-  max-width: 800px;
-  margin: 4rem auto 0;
-  padding-top: 2rem;
-  border-top: 1px solid var(--color-border, #eee);
+  margin-top: 3rem;
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--color-border, #eee);
+}
+
+.comments-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem;
+  color: var(--color-text, #333);
 }
 
 /* 未找到 */
 .not-found {
   text-align: center;
-  padding: 4rem 1rem;
+  padding: 6rem 2rem;
+  background: #fafbfc;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.not-found-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
 }
 
 .not-found h1 {
   font-size: 1.75rem;
   margin-bottom: 0.75rem;
+  color: var(--color-text, #333);
 }
 
 .not-found p {
   color: var(--color-text-muted, #666);
   margin-bottom: 1.5rem;
+  font-size: 1rem;
 }
 
 .back-home {
-  color: var(--color-primary, #0070f3);
+  display: inline-block;
+  padding: 0.65rem 1.25rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border-radius: 8px;
   text-decoration: none;
+  font-weight: 500;
+  transition: transform 0.15s ease;
 }
 
 .back-home:hover {
-  text-decoration: underline;
+  transform: translateY(-2px);
+  color: #fff;
 }
 
 /* 响应式 */
-@media (max-width: 1023px) {
-  .post-container {
-    flex-direction: column;
-  }
-
+@media (max-width: 1100px) {
   .toc-sidebar {
     display: none;
   }
 }
 
-@media (max-width: 600px) {
-  .post-detail {
-    padding: 1.5rem 1rem;
+@media (max-width: 768px) {
+  .post-wrapper {
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  .post-header {
+    padding: 1.5rem;
   }
 
   .post-title {
     font-size: 1.65rem;
   }
 
-  .post-meta {
-    font-size: 0.8rem;
-    flex-wrap: wrap;
-    justify-content: center;
+  .post-content {
+    padding: 1.5rem;
+    border-radius: 12px;
   }
 
-  .post-header {
-    margin-bottom: 1.5rem;
+  .post-meta {
+    font-size: 0.8rem;
+  }
+
+  .comments-section {
+    padding: 1.5rem;
   }
 }
 </style>
 
 <!-- Markdown 内容样式 -->
 <style>
-/* 覆盖 md-editor-v3 默认样式 */
 .md-preview-custom {
-  font-size: 1.05rem;
-  line-height: 1.8;
+  font-size: 1.02rem;
+  line-height: 1.85;
   color: #374151;
 }
 
@@ -398,26 +502,28 @@ onUnmounted(() => {
 .md-preview-custom h4,
 .md-preview-custom h5,
 .md-preview-custom h6 {
-  margin-top: 2rem;
-  margin-bottom: 0.75rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: #111827;
+  margin-top: 2.2rem;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #1a1a2e;
 }
 
-.md-preview-custom h1 { font-size: 2rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; }
-.md-preview-custom h2 { font-size: 1.6rem; }
-.md-preview-custom h3 { font-size: 1.35rem; }
-.md-preview-custom h4 { font-size: 1.15rem; }
+.md-preview-custom h1 { font-size: 1.9rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 0.6rem; }
+.md-preview-custom h2 { font-size: 1.55rem; }
+.md-preview-custom h3 { font-size: 1.3rem; }
+.md-preview-custom h4 { font-size: 1.1rem; }
+.md-preview-custom h5 { font-size: 1rem; }
+.md-preview-custom h6 { font-size: 0.95rem; color: #6b7280; }
 
 .md-preview-custom p {
-  margin: 1.1rem 0;
+  margin: 1.15rem 0;
 }
 
 .md-preview-custom a {
-  color: #2563eb;
+  color: #667eea;
   text-decoration: none;
-  border-bottom: 1px dotted #2563eb;
+  border-bottom: 1px dotted #667eea;
 }
 
 .md-preview-custom a:hover {
@@ -426,67 +532,76 @@ onUnmounted(() => {
 
 .md-preview-custom ul,
 .md-preview-custom ol {
-  margin: 1rem 0;
+  margin: 1.1rem 0;
   padding-left: 1.75rem;
 }
 
 .md-preview-custom li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.md-preview-custom li::marker {
+  color: #667eea;
 }
 
 .md-preview-custom blockquote {
   margin: 1.5rem 0;
-  padding: 0.75rem 1.25rem;
-  border-left: 4px solid #2563eb;
-  background: #f8fafc;
+  padding: 1rem 1.25rem;
+  border-left: 4px solid #667eea;
+  background: linear-gradient(135deg, #f8fafc 0%, #f0f4ff 100%);
   color: #475569;
-  border-radius: 0 6px 6px 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.md-preview-custom blockquote p {
+  margin: 0;
 }
 
 .md-preview-custom code:not(pre code) {
   background: #f1f5f9;
-  padding: 0.2rem 0.45rem;
+  padding: 0.22rem 0.5rem;
   border-radius: 4px;
   font-family: "SF Mono", Monaco, Consolas, monospace;
-  font-size: 0.9em;
+  font-size: 0.88em;
   color: #dc2626;
 }
 
 .md-preview-custom pre {
   background: #1e293b;
   color: #e2e8f0;
-  padding: 1.1rem;
-  border-radius: 10px;
+  padding: 1.25rem;
   overflow-x: auto;
-  margin: 1.25rem 0;
-  line-height: 1.6;
+  margin: 1.5rem 0;
+  line-height: 1.65;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .md-preview-custom pre code {
   background: none;
   padding: 0;
   color: inherit;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
 }
 
 .md-preview-custom img {
   max-width: 100%;
   height: auto;
-  border-radius: 8px;
-  margin: 1.25rem 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  margin: 1.5rem 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 .md-preview-custom table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1.25rem 0;
+  margin: 1.5rem 0;
+  font-size: 0.95rem;
 }
 
 .md-preview-custom th,
 .md-preview-custom td {
   border: 1px solid #e5e7eb;
-  padding: 0.65rem 0.85rem;
+  padding: 0.75rem 1rem;
   text-align: left;
 }
 
@@ -497,7 +612,7 @@ onUnmounted(() => {
 
 .md-preview-custom hr {
   border: none;
-  border-top: 2px solid #eee;
+  border-top: 2px dashed #e5e7eb;
   margin: 2.5rem 0;
 }
 </style>
