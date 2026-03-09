@@ -1,5 +1,5 @@
 <template>
-  <a :href="href" :class="{ active: isActive }">
+  <a :href="href" :class="['nav-link', { active: isActive }]">
     <slot />
   </a>
 </template>
@@ -17,24 +17,32 @@ const pageContext = usePageContext();
 const isActive = computed(() => {
   const { urlPathname } = pageContext;
   if (!props.href) return false;
-  // exact match requested
   if (props.exact) return urlPathname === props.href;
-  // default behaviour: treat root specially, else prefix match
   if (props.href === "/") return urlPathname === "/";
   return urlPathname.startsWith(props.href);
 });
 </script>
 
 <style scoped>
-a {
-  padding: 2px 10px;
-  margin: 4px 0;
+.nav-link {
+  display: block;
+  padding: 0.6rem 0.85rem;
+  margin: 0.15rem 0;
   text-decoration: none;
-  color: #424242;
-
+  color: var(--color-text-muted, #666);
+  font-size: 0.95rem;
+  border-radius: 8px;
+  transition: all 0.15s ease;
 }
-a.active {
-  background-color: #eee;
-  border-radius: 4px;
+
+.nav-link:hover {
+  background: #f5f5f5;
+  color: var(--color-text, #333);
+}
+
+.nav-link.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-weight: 500;
 }
 </style>
