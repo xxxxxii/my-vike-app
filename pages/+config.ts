@@ -10,5 +10,8 @@ export default {
   title: "My Vike App",
   description: "Demo showcasing Vike",
 
+  // 启用客户端路由，使页面过渡动画生效
+  clientRouting: true,
+
   extends: [vikeVue],
 } as Config;
